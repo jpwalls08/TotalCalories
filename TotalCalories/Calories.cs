@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text;
 
 namespace TotalCalories
 {
@@ -42,21 +44,21 @@ namespace TotalCalories
 
 
             #region Attempt_2
-            List<string> elfCalList = new List<string>();
+            //List<string> elfCalList = new List<string>();
 
-            //elfCalList.Add("Calories");
+            ////elfCalList.Add("Calories");
 
-            int length = Convert.ToInt32(Console.ReadLine());
-            int sum = 0;
-            int input = 0;
-            for (int i = 0; i < elfCalList.Count; i++)
-            {
-                Console.Write(elfCalList[i] + "Elf:");
-                sum += input;
-            }
+            //int length = Convert.ToInt32(Console.ReadLine());
+            //int sum = 0;
+            //int input = 0;
+            //for (int i = 0; i < elfCalList.Count; i++)
+            //{
+            //    Console.Write(elfCalList[i] + "Elf:");
+            //    sum += input;
+            //}
 
-            int total = elfCalList.Sum();
-            elfCalList.Sort();
+            //int total = elfCalList.Sum();
+            //elfCalList.Sort();
             #endregion
 
             #region Attempt_3
@@ -154,16 +156,57 @@ namespace TotalCalories
             #endregion
 
 
+            #region Attempt_4
+
+            string[] lines = File.ReadLines("C:/Advent/Challenges/Challenge012022");
+
+            List<Elf> elves = new List<Elf>();
+            string name = "First";
+            int total = 0;
+            Elf e = new Elf();
+            e.Name = name;
+            int elfcount = 0;
+
+            foreach (string r in lines)
+            {
+                r.Split(',')
+                    if (r = "")
+                {
+                    ++icount;
+                    e.totalCal = total;
+                    elves.Add(e);
+
+                    e = new Elf();
+                    e.Name = "Elf" + icount.ToString();
+                }
+                total += int.TryParse(r);
+
+                Console.WriteLine("--{0}", r);
+            }
+
+            elves.Sort(type)
+
+                Console.WriteLine("Press any key to exit");
+            System.Console.ReadKey();
+        };
+
+        private class Elf
+        {
+            public string name;
+            public int totalCal;
+        };
 
 
-            //Console.ReadKey();               
+        #endregion
 
-            //}
+        //Console.ReadKey();               
 
+        //}
 
-        }
 
     }
+
+}
 
 };
 
