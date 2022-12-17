@@ -1,213 +1,143 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
-using System.Text;
+﻿using Microsoft.AspNetCore.Mvc;
+using StoreFront.UI.MVC.Models;
+using System.Diagnostics;
+using MimeKit;
+using MailKit.Net.Smtp;
 
-namespace TotalCalories
+namespace StoreFront.UI.MVC.Controllers
 {
-    public class Calories
+    public class HomeController : Controller
     {
-        static void Main(string[] args)
+
+        private readonly ILogger<HomeController> _logger;
+        private readonly IConfiguration _config;
+
+        public HomeController(ILogger<HomeController> logger, IConfiguration config)
+        {
+            _logger = logger;
+            _config = config;
+        }
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Contact(ContactViewModel cvm)
         {
 
-            #region Attempt_1
 
-            //string[] elfCalories = new string[10];
-            //Console.WriteLine("Below is a list of elves' and their total calories from greatest to least greatest.\n" +
-            //    "Just enter in your Calories for a single elf and we'll handle the rest!\n");
+            if (!ModelState.IsValid)
+            {
+                return View(cvm);
+            }
 
-            //{
-            //    for (int i = 0; i < elfCalories.Length; i++)
-            //    {
-            //        elfCalories[i] = Console.ReadLine();
-            //    }
-            //    int isElf = i + 1;
-            //    Console.WriteLine(isElf + " Elf: " + elfCalories[i]);
+            //Create the format for the message content we will receive from the contact form
+            string message = $"You have received a new email from your site's contact form!<br />" +
+                $"Sender: {cvm.Name}<br />Email: {cvm.Email}<br />Subject: {cvm.Subject}<br />" +
+                $"Message: {cvm.Message}";
 
-            //    for (int i = 0; i < elfCalories.Length; i++)
-            //    {
-            //        int isElf = i + 1;
-            //        Console.WriteLine(isElf + " Elf: " + elfCalories[i]);
-            //    }
+            //Create a MimeMessage object to assist with storing/transporting the email information
+            //from the contact form
+            var mm = new MimeMessage();
 
-            //    //int sum = arr.Sum();
-            //    //Console.WriteLine("Total Calories" + sum);
-            //    Array.Sort(elfCalories);
-            //    for (int i = 0; i < elfCalories.Length; i++)
-            //    {
-            //        Console.WriteLine(elfCalories[i]);
-            //    }
+            //Even though the user is the one attempting to send a message to us, the ACTUAL sender
+            //of the email is the email user we set up our hosting provider
 
-            #endregion
+            //We can access the credentials for this email user from our appsettings.json file as shown below:
+            mm.From.Add(new MailboxAddress("Sender", _config.GetValue<string>("Credentials:Email:User")));
 
 
-            #region Attempt_2
-            //List<string> elfCalList = new List<string>();
-
-            ////elfCalList.Add("Calories");
-
-            //int length = Convert.ToInt32(Console.ReadLine());
-            //int sum = 0;
-            //int input = 0;
-            //for (int i = 0; i < elfCalList.Count; i++)
-            //{
-            //    Console.Write(elfCalList[i] + "Elf:");
-            //    sum += input;
-            //}
-
-            //int total = elfCalList.Sum();
-            //elfCalList.Sort();
-            #endregion
-
-            #region Attempt_3
-            //List<string> calInput = new List<string>();
-
-            //Console.WriteLine("Below is a list of elves' and their total calories from greatest to least greatest.\n" +
-            //    "Just enter in your Calories for a single elf and we'll handle the rest!\n");
-            //string input = Console.ReadLine();
-            //calInput.Add(input);
-
-            //bool exit = true;
-            //do
-            //{
-            //    Console.WriteLine(
-            //        "A) Enter Calories\n" +
-            //        "E) Enter new Elf Calories\n" +
-            //        "C) Calculate Total Calories\n" +
-            //        "D) List of Elves\n" +
-            //        "X) EXIT\n");
-
-            //    string userInput = Console.ReadKey(true).Key.ToString().ToUpper();
-            //    Console.Clear();
-
-            //    switch (userInput)
-            //    {
-            //        case "A":
-            //            while (!string.IsNullOrEmpty(input))
-            //            {
-            //                calInput.Add(input);
-            //                Console.WriteLine("Please enter Calories per Elf.");
-            //                input = Console.ReadLine();
-            //            }
-            //            break;
-
-            //        case "B":
-            //            Console.WriteLine("Please enter Calories.");
-            //            break;
-
-            //        case "C":
-            //            while (!string.IsNullOrEmpty(input))
-            //            {
-            //                calInput.Add(input);
-            //                input = Console.ReadLine();
-            //            }
-            //            if (calInput.Count > 0)
-            //            {
-            //                Console.WriteLine("Total Calories = " + calInput.Count);
-            //            }
-
-            //            else
-            //            {
-            //                Console.WriteLine("You have entered 0 Calories.");
-            //            }
-            //            break;
-
-            //        case "D":
-            //            Console.WriteLine("Calories listed per Elf from Greatest to Least Greatest");
-            //            Console.WriteLine(calInput);
-            //            break;
-
-            //        case "X":
-            //        case "Esc":
-            //        case "End":
-            //            Console.WriteLine("Thank you for participating! Comeback if you need to add anymore!");
-            //            //if (userInput.Length("X", "Esc", "End"))
-            //            //{
-            //            //    exit = true;
-            //            //    break;
-            //            //}
-            //            exit = true;
-            //            break;
-            //    }
+            //The recipient of this email will be our personal email address, also stored in appsetting.json
+            mm.To.Add(new MailboxAddress("Personal", _config.GetValue<string>("Credentials:Email:Recipient")));
 
 
+            //The subject will be the one provided by the user, which we store in our cvm object
+            mm.Subject = cvm.Subject;
 
-            //} while (!exit);
 
-            //while (!string.IsNullOrEmpty(input))
-            //{
-            //    calInput.Add(input);
-            //    Console.WriteLine("Please enter Calories per Elf.");
-            //    input = Console.ReadLine();
-            //}
+            //The body of the message will be formatted with string we created above
+            mm.Body = new TextPart("HTML") { Text = message };
 
-            //if (calInput.Count > 0)
-            //{
-            //    Console.WriteLine("Total Calories = " + calInput.Count);
-            //}
+
+            //We can set the priority of the message as "urgent" so it will be flagged in our email client
+            mm.Priority = MessagePriority.Urgent;
+
+
+            //We can also add the user's provided email address to the list of ReplyTo addresses.
+            //This lets us reply directly to the person who sent the message instead of our email user.
+            mm.ReplyTo.Add(new MailboxAddress("User", cvm.Email));
+
+            //The using directive will create an SmtpClient object used to send the email.
+            //Once all of the code inside the using directive's scope has been executed,
+            //it will close any open connections and dispose of the object automatically.
+            using (var client = new SmtpClient())
+            {
+                //Connect to the mail server using the credentials in our appsettings.json
+                client.Connect(_config.GetValue<string>("Credentials:Email:Client"));
+
+                //Login to the mail server using the credentials for our email user
+                client.Authenticate(
+
+                    //Username
+                    _config.GetValue<string>("Credentials:Email:User"),
+
+                    //Password
+                    _config.GetValue<string>("Credentials:Email:Password")
+
+                    );
+
+                //It's possible the mail server may be down when the user attempts to contact us,
+                //so we can encapsulate our code to send the message in a try/catch.
+
+                try
+                {
+                    //Try to send the email
+                    client.Send(mm);
+                }
+                catch (Exception ex)
+                {
+                    //If there is an issue, we can store an error message in a ViewBag variable
+                    //to be displayed in the View
+                    ViewBag.ErrorMessage = $"There was an error processing your request. Please " +
+                        $"try again later.<br />Error Message: {ex.StackTrace}";
+
+                    //Return the user to the View with their form info intact
+                    return View(cvm);
+
+                }
+
+            }
 
             //else
             //{
-            //    Console.WriteLine("You have entered 0 Calories.");
+            //    var contact = new Contact
+            //    {
+
+            //    }
+            //    ViewBag.Message = "Your message was sent.";
             //}
 
-            #endregion
+            return View(cvm);
 
-
-            #region Attempt_4
-
-            string[] lines = File.ReadLines("C:/Advent/Challenges/Challenge012022");
-
-            List<Elf> elves = new List<Elf>();
-            string name = "First";
-            int total = 0;
-            Elf e = new Elf();
-            e.Name = name;
-            int elfcount = 0;
-
-            foreach (string r in lines)
-            {
-                r.Split(',')
-                    if (r = "")
-                {
-                    ++icount;
-                    e.totalCal = total;
-                    elves.Add(e);
-
-                    e = new Elf();
-                    e.Name = "Elf" + icount.ToString();
-                }
-                total += int.TryParse(r);
-
-                Console.WriteLine("--{0}", r);
-            }
-
-            elves.Sort(type)
-
-                Console.WriteLine("Press any key to exit");
-            System.Console.ReadKey();
-        };
-
-        private class Elf
-        {
-            public string name;
-            public int totalCal;
-        };
-
-
-        #endregion
-
-        //Console.ReadKey();               
-
-        //}
-
+        }
 
     }
-
 }
-
-};
-
-
